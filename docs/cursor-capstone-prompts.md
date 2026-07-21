@@ -1,8 +1,6 @@
 # Cursor capstone prompts — stage slot waitlist
 
-Copy-paste prompts for implementing the waitlist feature (T1–T8) in Cursor. Claude Code
-participants can work from `specs/001-stage-waitlist/tasks.md` directly — subagents delegate
-automatically from their `description` fields.
+Copy-paste prompts for implementing the waitlist feature (T1–T8) in Cursor.
 
 Read `specs/constitution.md` and `specs/001-stage-waitlist/spec.md` before starting.
 
@@ -60,9 +58,9 @@ Implement T7 from specs/001-stage-waitlist/tasks.md: normalize write-path errors
 ## T8 — Update docs and skill
 
 ```
-Implement T8 from specs/001-stage-waitlist/tasks.md: update AGENTS.md, CLAUDE.md,
-.cursor/skills/production-domain/SKILL.md, and .claude/skills/production-domain/SKILL.md
-to reflect the new waitlist behavior. Remove resolved tech-debt items.
+Implement T8 from specs/001-stage-waitlist/tasks.md: update AGENTS.md and
+.cursor/skills/production-domain/SKILL.md to reflect the new waitlist behavior. Remove
+resolved tech-debt items.
 ```
 
 ## Parallel fan-out (T1, T2, T3)

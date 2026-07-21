@@ -9,8 +9,7 @@ so several tasks can work in parallel without stepping on each other.
 
 Scope:
 - Do the one task you were handed — nothing else. Do not drift into nearby cleanups.
-- Stay inside this repo's contracts. Read `AGENTS.md` (or `CLAUDE.md`) and
-  `specs/constitution.md` first. Preserve observable behavior unless the task explicitly
+- Stay inside this repo's contracts. Read `AGENTS.md` and `specs/constitution.md` first. Preserve observable behavior unless the task explicitly
   changes it; rate math and crew-capacity semantics are contracts.
 - Tests come before refactors of untested code. If you touch `src/legacy/rates.js` and no
   characterization test covers the path, write that test first (or stop and say so).
