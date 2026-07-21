@@ -1,0 +1,46 @@
+{
+  "//": "Project settings for Claude Code. Checked into git so the whole team shares the same permissions and hooks. Personal overrides go in settings.local.json (gitignored).",
+
+  "permissions": {
+    "allow": [
+      "Bash(npm run dev)",
+      "Bash(npm run build)",
+      "Bash(npm test)",
+      "Read",
+      "Edit"
+    ],
+    "deny": [
+      "Bash(rm -rf*)",
+      "Bash(git push*)"
+    ],
+    "//": "Allowlist the routine commands so the team is not prompted for them. Denylist the destructive ones outright."
+  },
+
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/format-and-typecheck.sh",
+            "//": "After any file edit, format the file and run the type checker. Output comes back to the agent as feedback, so a type error gets fixed in the same turn."
+          }
+        ]
+      }
+    ],
+
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/guard-rates.sh",
+            "//": "Blocks shell commands that would rewrite rates.js without a test file present. A hard guardrail around the riskiest file in the repo."
+          }
+        ]
+      }
+    ]
+  }
+}

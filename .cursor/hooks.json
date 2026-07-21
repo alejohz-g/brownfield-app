@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "hooks": {
+    "afterFileEdit": [
+      {
+        "command": ".cursor/hooks/format-and-typecheck.sh"
+      }
+    ],
+    "beforeShellExecution": [
+      {
+        "command": ".cursor/hooks/guard-rates.sh",
+        "matcher": "rates\\.js",
+        "failClosed": true
+      }
+    ]
+  }
+}

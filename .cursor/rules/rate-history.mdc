@@ -1,0 +1,30 @@
+---
+description: Rate card history and contract — surge before discount, floor rates, peak definition
+globs: "**/rates.js,**/bookings*"
+alwaysApply: false
+---
+
+# Rate-card history
+
+Situational knowledge for tasks involving the rate card. Keeps always-loaded context small.
+
+## Why surge comes before the discount
+
+In 2023 finance asked for a flat 8 percent volume discount as a goodwill gesture for large
+productions booking big crews. It was layered on top of the existing surge multiplier with
+no spec. The order (surge, then discount) was an implementation accident that later became
+the number printed on invoices. Changing the order changes what productions were billed
+historically, so treat it as a contract, not a preference.
+
+## The floor rate for unknown stages
+
+`baseRate` returns 119 for any stage it does not recognize. This was a defensive default so
+a typo in the stage name would not crash the quote. It also means a misspelled stage
+silently books at the floor rate. A real fix validates the stage up front; do not just
+change the default in passing.
+
+## Peak definition drift
+
+"Peak" currently means weekends plus all of July and December. Production has asked twice to
+make peak data-driven (actual stage demand) rather than calendar-based. That is a real
+feature, not a one-line change. If a task heads that way, write a spec first (see `specs/`).

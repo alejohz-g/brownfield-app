@@ -1,0 +1,30 @@
+---
+description: Core project context — architecture, tech debt, conventions, and how to work in this repo
+alwaysApply: true
+---
+
+# shoot-scheduling-api — project context
+
+A legacy scheduling API for booking soundstages for shoots. Real tech debt on purpose for
+brownfield agent practice.
+
+## Architecture
+
+`src/server.ts` wires Express and mounts one router. `src/routes/bookings.ts` holds a
+single fat handler. `src/db.ts` is an in-memory store. `src/legacy/rates.js` is untyped
+JavaScript with order-dependent pricing rules. Treat the rate card as a contract.
+
+## Known tech debt
+
+- POST handler returns three different error shapes with three different status codes.
+- No tests. `npm test` fails on purpose.
+- `capacityFor` returns `undefined` for unknown stages instead of throwing.
+- Rate card applies surge before volume discount — that order is the contract.
+
+## Conventions
+
+- TypeScript is in loose mode (`strict: false`). Do not flip strict on in passing.
+- Keep handlers thin; push business logic into a service layer.
+- Do not introduce a new dependency without calling it out in your summary.
+- Before changing `rates.js`, write characterization tests first.
+- Check `specs/constitution.md` and the relevant feature spec before implementing.
