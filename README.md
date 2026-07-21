@@ -40,53 +40,33 @@ concept from the workshop:
 
 **Shared:**
 - `specs/`: spec-driven development (spec, plan, tasks, constitution).
-- `scripts/parallel-worktrees.sh`: parallel work with git worktrees.
-- `docs/cursor-capstone-prompts.md`: copy-paste Cursor prompts for the waitlist capstone.
 
 Each of these maps to one building block from the coding-agents workshop. Open the repo in
 Cursor and look at how each file is written — that wiring is the lesson.
 
 ## MCP servers (optional)
 
-`.cursor/mcp.json` wires three real MCP servers the agent can use:
+`.cursor/mcp.json` wires two MCP servers the agent can use:
 
-- **filesystem** — browses `./src` as a tool. Works out of the box.
-- **mongodb** — the official MongoDB MCP server (`mongodb/mongodb-mcp-server`) run via Docker
-  in read-only mode, connecting to your MongoDB (e.g. one running in Docker) to inspect
-  collections and run queries.
 - **github** — the official GitHub MCP server, run via Docker, to read issues, PRs and repos.
+- **miro-mcp** — the Miro MCP server for board and diagram access.
 
-To enable mongodb and github, set the credentials in your environment (they are referenced
-from `.cursor/mcp.json`, never hardcoded):
+To enable github, set the credentials in your environment (referenced from
+`.cursor/mcp.json`, never hardcoded):
 
 ```
 cp .env.example .env      # then edit .env with your values
 set -a; source .env; set +a
 ```
 
-`.env` is gitignored. You need Docker running (both mongodb and github run as containers),
-and a reachable MongoDB — `MDB_MCP_CONNECTION_STRING` uses `host.docker.internal` so the MCP
-container can reach a MongoDB you published on the host.
+`.env` is gitignored. You need Docker running for the github server.
 
 ## Open in Cursor
 
-Open **`brownfield-app/`** as your workspace root — not the repo root. Cursor loads
-`AGENTS.md` and `.cursor/rules/`. See `docs/00-cursor-setup.md` at the repo root for full
-setup and troubleshooting.
+Open this folder as your workspace root. Cursor loads `AGENTS.md` and `.cursor/rules/`
+automatically.
 
 ## A good first exercise
 
 Implement the waitlist in `specs/001-stage-waitlist/`. Start by running the test-writer
-subagent on the rate card, then work the tasks in order. Use the worktree script if you
-want to parallelize the independent ones.
-
----
-
-## Also works in Claude Code
-
-The repo ships a parallel `.claude/` config tree for Claude Code participants:
-
-- `CLAUDE.md`, `.claude/steering/`, `.claude/skills/`, `.claude/commands/`, `.claude/agents/`
-- `.claude/settings.json`, `.claude/hooks/`, `.mcp.json`
-
-See the appendix in `docs/00-cursor-setup.md` for the full mapping and setup steps.
+subagent on the rate card, then work the tasks in order.

@@ -14,11 +14,10 @@ enough to do, verify, and commit on its own. Check them off as you go.
 - [ ] T6. Wire routes to the service. `POST` returns 201 or 202; add `DELETE /:id`.
 - [ ] T7. Normalize error shapes on the write path to a single `{error, code}` form. Note
   the behavior change in the summary.
-- [ ] T8. Update `AGENTS.md`, `CLAUDE.md` known tech debt and both copies of the
-  production-domain skill to reflect the new waitlist behavior.
+- [ ] T8. Update `AGENTS.md` known tech debt and the production-domain skill to reflect
+  the new waitlist behavior.
 
 ## How to run this with parallelization
 
 T2, T3, and T1 are largely independent and can run in separate git worktrees on separate
-branches at the same time. See `scripts/parallel-worktrees.sh` and
-`docs/11-parallelization-worktrees.md`.
+branches at the same time.

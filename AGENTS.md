@@ -4,8 +4,6 @@ Primary config and context file for this repo. Cursor loads this automatically a
 of every session, along with `.cursor/rules/`, so it is the cheapest, highest-leverage place
 to put the things you would otherwise repeat in every prompt.
 
-> **Using Claude Code instead?** See [CLAUDE.md](CLAUDE.md) for the Claude-native entry point.
-
 ## What this service is
 
 A legacy scheduling API for booking soundstages for shoots. A production reserves a stage
@@ -55,20 +53,19 @@ Standing rules and planned work live in `specs/`:
 
 ## Credentials and environment
 
-Credentials (the Mongo connection string, the GitHub token) live in `.env`, which is
-gitignored. They are NOT hardcoded in `.cursor/mcp.json` or `.mcp.json` — those files
-only hold `${...}` references that the agent expands from the shell environment at launch.
-So `.env` has to be loaded into the shell before starting the agent:
+Credentials (the GitHub token) live in `.env`, which is gitignored. They are NOT
+hardcoded in `.cursor/mcp.json` — that file only holds `${...}` references that the agent
+expands from the shell environment at launch. So `.env` has to be loaded into the shell
+before starting the agent:
 
     set -a; source .env; set +a
 
 If an MCP server does not connect, check the variable is in the environment first:
-`echo $MDB_MCP_CONNECTION_STRING`. Never ask for or invent these secrets — if they are
-missing, say the `.env` needs to be loaded.
+`echo $GITHUB_TOKEN`. Never ask for or invent these secrets — if they are missing, say
+the `.env` needs to be loaded.
 
 ## Context hygiene
 
 This file should stay short. Detailed, situational knowledge lives in `.cursor/rules/`
-(and `.claude/steering/` for Claude Code) and `specs/`, and is pulled in only when
-relevant. If this file grows past roughly one screen, move the situational parts into a
-rule or spec and link to it. See `docs/01-context-management.md`.
+and `specs/`, and is pulled in only when relevant. If this file grows past roughly one
+screen, move the situational parts into a rule or spec and link to it.

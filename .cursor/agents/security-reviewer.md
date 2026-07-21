@@ -15,4 +15,4 @@ Focus, in priority order:
 
 For each finding, give: the file and line, the concrete risk, and the smallest fix. Rank by
 severity. If the diff is clean, say so plainly rather than inventing concerns. Do not flag
-the known, documented tech debt in AGENTS.md or CLAUDE.md unless the diff makes it worse.
+the known, documented tech debt in AGENTS.md unless the diff makes it worse.
