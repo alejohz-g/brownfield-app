@@ -67,5 +67,5 @@ the `.env` needs to be loaded.
 ## Context hygiene
 
 This file should stay short. Detailed, situational knowledge lives in `.cursor/rules/`
-and `specs/`, and is pulled in only when relevant. If this file grows past roughly one screen, move the situational parts into a
-rule or spec and link to it. See `docs/01-context-management.md`.
+and `specs/`, and is pulled in only when relevant. If this file grows past roughly one
+screen, move the situational parts into a rule or spec and link to it.

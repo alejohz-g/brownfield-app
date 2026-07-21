@@ -40,8 +40,6 @@ concept from the workshop:
 
 **Shared:**
 - `specs/`: spec-driven development (spec, plan, tasks, constitution).
-- `scripts/parallel-worktrees.sh`: parallel work with git worktrees.
-- `docs/cursor-capstone-prompts.md`: copy-paste Cursor prompts for the waitlist capstone.
 
 Each of these maps to one building block from the coding-agents workshop. Open the repo in
 Cursor and look at how each file is written — that wiring is the lesson.
@@ -65,12 +63,10 @@ set -a; source .env; set +a
 
 ## Open in Cursor
 
-Open **`brownfield-app/`** as your workspace root — not the repo root. Cursor loads
-`AGENTS.md` and `.cursor/rules/`. See `docs/00-cursor-setup.md` at the repo root for full
-setup and troubleshooting.
+Open this folder as your workspace root. Cursor loads `AGENTS.md` and `.cursor/rules/`
+automatically.
 
 ## A good first exercise
 
 Implement the waitlist in `specs/001-stage-waitlist/`. Start by running the test-writer
-subagent on the rate card, then work the tasks in order. Use the worktree script if you
-want to parallelize the independent ones.
+subagent on the rate card, then work the tasks in order.

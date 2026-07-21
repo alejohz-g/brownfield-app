@@ -20,5 +20,4 @@ enough to do, verify, and commit on its own. Check them off as you go.
 ## How to run this with parallelization
 
 T2, T3, and T1 are largely independent and can run in separate git worktrees on separate
-branches at the same time. See `scripts/parallel-worktrees.sh` and
-`docs/11-parallelization-worktrees.md`.
+branches at the same time.
