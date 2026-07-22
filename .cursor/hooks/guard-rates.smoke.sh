@@ -54,6 +54,22 @@ run_case "beforeShellExecution extensionless dist path" \
   '{"hook_event_name":"beforeShellExecution","command":"node -e \"require('"'"'./dist/legacy/rates'"'"')\""}' \
   deny
 
+run_case "beforeShellExecution concatenation bypass" \
+  '{"hook_event_name":"beforeShellExecution","command":"node -e \"require('"'"'./dist/legacy/'"'"' + '"'"'rates'"'"')\""}' \
+  deny
+
+run_case "beforeShellExecution split-string bypass" \
+  '{"hook_event_name":"beforeShellExecution","command":"node -e \"require('"'"'./dist/legacy/'"'"' + '"'"'ra'"'"' + '"'"'tes'"'"')\""}' \
+  deny
+
+run_case "beforeShellExecution rateFor call" \
+  '{"hook_event_name":"beforeShellExecution","command":"node -e \"const f=require('"'"'./dist/legacy/rates'"'"').rateFor; console.log(f('"'"'stage-a'"'"','"'"'2026-07-04T09'"'"',5))\""}' \
+  deny
+
+run_case "beforeShellExecution shell redirect write" \
+  "{\"hook_event_name\":\"beforeShellExecution\",\"command\":\"cat > $TARGET <<'EOF'\"}" \
+  deny
+
 run_case "beforeShellExecution build verify command" \
   "$(python3 - <<'PY'
 import json
@@ -73,6 +89,22 @@ run_case "preToolUse Read unrelated" \
 
 run_case "npm test" \
   '{"hook_event_name":"beforeShellExecution","command":"npm test"}' \
+  allow
+
+run_case "npm run build alone" \
+  '{"hook_event_name":"beforeShellExecution","command":"npm run build"}' \
+  allow
+
+run_case "npm run dev alone" \
+  '{"hook_event_name":"beforeShellExecution","command":"npm run dev"}' \
+  allow
+
+run_case "curl POST booking bypass" \
+  '{"hook_event_name":"beforeShellExecution","command":"curl -s -X POST http://localhost:3000/bookings -H \"Content-Type: application/json\" -d \"{\\\"production\\\":\\\"x\\\",\\\"stage\\\":\\\"stage-a\\\",\\\"slot\\\":\\\"2026-07-04T09\\\",\\\"crewSize\\\":5}\""}' \
+  deny
+
+run_case "curl GET bookings allowed" \
+  '{"hook_event_name":"beforeShellExecution","command":"curl -s http://localhost:3000/bookings"}' \
   allow
 
 echo "All guard-rates smoke tests passed."
