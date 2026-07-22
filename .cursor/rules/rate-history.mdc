@@ -1,6 +1,6 @@
 ---
 description: Rate card history and contract — surge before discount, floor rates, peak definition
-globs: "**/rates.js,**/bookings*"
+globs: **/rates.js,**/bookings*
 alwaysApply: false
 ---
 
