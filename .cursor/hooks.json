@@ -1,15 +1,17 @@
 {
   "version": 1,
   "hooks": {
-    "afterFileEdit": [
+    "preToolUse": [
       {
-        "command": ".cursor/hooks/format-and-typecheck.sh"
+        "command": ".cursor/hooks/guard-rates.sh",
+        "matcher": "Write|StrReplace|Delete|Shell",
+        "failClosed": true
       }
     ],
     "beforeShellExecution": [
       {
         "command": ".cursor/hooks/guard-rates.sh",
-        "matcher": "rates\\.js",
+        "matcher": "rates\\.(js|ts)|legacy/rates",
         "failClosed": true
       }
     ]

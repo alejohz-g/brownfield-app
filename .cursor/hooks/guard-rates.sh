@@ -1,24 +1,157 @@
 #!/usr/bin/env bash
-# beforeShellExecution hook: hard guardrail around the riskiest file in the repo.
-# Exit 2 to deny. Parses JSON from stdin per Cursor hook protocol.
+# Block rate-card edits when no characterization test exists.
+# Wired to:
+#   preToolUse        — Write, StrReplace, Delete, Shell tool calls
+#   beforeShellExecution — shell commands that mention the rate card
+# Exit 2 to deny per Cursor hook protocol.
 set -euo pipefail
 
 input=$(cat)
-command=""
 
-if command -v python3 >/dev/null 2>&1; then
-  command=$(echo "$input" | python3 -c "import sys,json; print(json.load(sys.stdin).get('command',''))" 2>/dev/null || true)
-elif command -v node >/dev/null 2>&1; then
-  command=$(echo "$input" | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{try{console.log(JSON.parse(d).command||'')}catch{console.log('')}})" 2>/dev/null || true)
-fi
+parse_and_decide() {
+  if command -v python3 >/dev/null 2>&1; then
+    INPUT="$input" python3 <<'PY'
+import glob
+import json
+import os
+import re
+import sys
 
-# If a shell command tries to rewrite rates.js and there is still no rate test, block it.
-if echo "$command" | grep -Eq "rates\.js"; then
-  if ! ls src/legacy/*rates*.test.* >/dev/null 2>&1 && ! ls test/*rates* >/dev/null 2>&1; then
-    echo '{"permission":"deny","user_message":"Refusing to touch rates.js with no characterization test present. Run the test-writer subagent first.","agent_message":"[guard] Run the test-writer subagent first, then retry."}'
-    exit 2
+data = json.loads(os.environ["INPUT"])
+event = data.get("hook_event_name", "")
+
+# src/legacy/rates.js, rates.ts, or shell commands that mention them.
+RATES_TARGET = re.compile(
+    r"legacy[/\\]rates\.(?:js|ts)(?:[^a-zA-Z]|$)|(?:^|[\s\"'`/])rates\.(?:js|ts)(?:[\s\"'`]|$)"
+)
+
+DENY = {
+    "permission": "deny",
+    "user_message": (
+        "Refusing to touch the rate card with no characterization test present. "
+        "Run the test-writer subagent first."
+    ),
+    "agent_message": "[guard] Run the test-writer subagent first, then retry.",
+}
+
+
+def has_rate_tests() -> bool:
+    return bool(
+        glob.glob("src/legacy/*rates*.test.*") or glob.glob("test/*rates*")
+    )
+
+
+def targets_rates(text: str) -> bool:
+    return bool(text and RATES_TARGET.search(text))
+
+
+def should_block(text: str) -> bool:
+    return targets_rates(text) and not has_rate_tests()
+
+
+def deny() -> None:
+    print(json.dumps(DENY))
+    sys.exit(2)
+
+
+def allow() -> None:
+    print('{"permission":"allow"}')
+    sys.exit(0)
+
+
+if event == "beforeShellExecution":
+    if should_block(data.get("command", "")):
+        deny()
+    allow()
+
+if event == "preToolUse":
+    tool = data.get("tool_name", "")
+    tool_input = data.get("tool_input") or {}
+
+    if tool in ("Write", "StrReplace", "Delete"):
+        if should_block(tool_input.get("path", "")):
+            deny()
+    elif tool == "Shell":
+        if should_block(tool_input.get("command", "")):
+            deny()
+
+    allow()
+
+allow()
+PY
+    return
   fi
-fi
 
-echo '{"permission":"allow"}'
-exit 0
+  if command -v node >/dev/null 2>&1; then
+    INPUT="$input" node <<'JS'
+const glob = require("fs").readdirSync;
+const path = require("path");
+
+const data = JSON.parse(process.env.INPUT);
+const event = data.hook_event_name || "";
+const ratesTarget = /legacy[/\\]rates\.(?:js|ts)(?:[^a-zA-Z]|$)|(?:^|[\s"'`\/])rates\.(?:js|ts)(?:[\s"'`]|$)/;
+
+const DENY = {
+  permission: "deny",
+  user_message:
+    "Refusing to touch the rate card with no characterization test present. Run the test-writer subagent first.",
+  agent_message: "[guard] Run the test-writer subagent first, then retry.",
+};
+
+function hasRateTests() {
+  const fs = require("fs");
+  const legacy = fs.existsSync("src/legacy")
+    ? fs.readdirSync("src/legacy").some((f) => /rates.*\.test\./.test(f))
+    : false;
+  const testDir = fs.existsSync("test")
+    ? fs.readdirSync("test").some((f) => /rates/.test(f))
+    : false;
+  return legacy || testDir;
+}
+
+function targetsRates(text) {
+  return Boolean(text && ratesTarget.test(text));
+}
+
+function shouldBlock(text) {
+  return targetsRates(text) && !hasRateTests();
+}
+
+function deny() {
+  console.log(JSON.stringify(DENY));
+  process.exit(2);
+}
+
+function allow() {
+  console.log('{"permission":"allow"}');
+  process.exit(0);
+}
+
+if (event === "beforeShellExecution") {
+  if (shouldBlock(data.command || "")) deny();
+  allow();
+}
+
+if (event === "preToolUse") {
+  const tool = data.tool_name || "";
+  const toolInput = data.tool_input || {};
+
+  if (["Write", "StrReplace", "Delete"].includes(tool)) {
+    if (shouldBlock(toolInput.path || "")) deny();
+  } else if (tool === "Shell") {
+    if (shouldBlock(toolInput.command || "")) deny();
+  }
+
+  allow();
+}
+
+allow();
+JS
+    return
+  fi
+
+  echo '{"permission":"deny","user_message":"guard-rates.sh requires python3 or node.","agent_message":"[guard] Install python3 or node so the rate-card guard can run."}' >&2
+  exit 2
+}
+
+parse_and_decide
