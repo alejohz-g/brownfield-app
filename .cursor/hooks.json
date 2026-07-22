@@ -4,11 +4,16 @@
     "preToolUse": [
       {
         "command": ".cursor/hooks/guard-rates.sh",
-        "matcher": "Write|StrReplace|Delete|Shell",
         "failClosed": true
       }
     ],
     "beforeShellExecution": [
+      {
+        "command": ".cursor/hooks/guard-rates.sh",
+        "failClosed": true
+      }
+    ],
+    "beforeMCPExecution": [
       {
         "command": ".cursor/hooks/guard-rates.sh",
         "failClosed": true

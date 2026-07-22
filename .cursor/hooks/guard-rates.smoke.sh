@@ -38,6 +38,14 @@ run_case "Delete" \
   "{\"hook_event_name\":\"preToolUse\",\"tool_name\":\"Delete\",\"tool_input\":{\"path\":\"$TARGET\"}}" \
   deny
 
+run_case "ApplyPatch rates path" \
+  '{"hook_event_name":"preToolUse","tool_name":"ApplyPatch","tool_input":{"patch":"*** Update File: src/legacy/rates.ts\n"}}' \
+  deny
+
+run_case "Write unrelated path with rate-card content" \
+  '{"hook_event_name":"preToolUse","tool_name":"Write","tool_input":{"path":"src/tmp/pricing.ts","contents":"function rateFor(stage, slot, crewSize) { return 1; }"}}' \
+  deny
+
 run_case "Write unrelated" \
   '{"hook_event_name":"preToolUse","tool_name":"Write","tool_input":{"path":"src/routes/bookings.ts"}}' \
   allow
@@ -48,6 +56,14 @@ run_case "Shell tool with rates.ts path" \
 
 run_case "beforeShellExecution rates.js" \
   "{\"hook_event_name\":\"beforeShellExecution\",\"command\":\"rm src/$LEGACY.js\"}" \
+  deny
+
+run_case "beforeShellExecution cp bypass" \
+  "{\"hook_event_name\":\"beforeShellExecution\",\"command\":\"cp /tmp/x src/$LEGACY.ts\"}" \
+  deny
+
+run_case "beforeShellExecution git checkout bypass" \
+  "{\"hook_event_name\":\"beforeShellExecution\",\"command\":\"git checkout HEAD -- src/$LEGACY.js\"}" \
   deny
 
 run_case "beforeShellExecution extensionless dist path" \
@@ -105,6 +121,14 @@ run_case "curl POST booking bypass" \
 
 run_case "curl GET bookings allowed" \
   '{"hook_event_name":"beforeShellExecution","command":"curl -s http://localhost:3000/bookings"}' \
+  allow
+
+run_case "beforeMCPExecution push_files rates" \
+  "{\"hook_event_name\":\"beforeMCPExecution\",\"tool_name\":\"push_files\",\"tool_input\":{\"files\":[{\"path\":\"$TARGET\",\"content\":\"export {}\"}]}}" \
+  deny
+
+run_case "beforeMCPExecution unrelated MCP read" \
+  '{"hook_event_name":"beforeMCPExecution","tool_name":"get_file_contents","tool_input":{"path":"README.md"}}' \
   allow
 
 echo "All guard-rates smoke tests passed."
