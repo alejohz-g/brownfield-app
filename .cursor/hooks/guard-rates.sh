@@ -1,9 +1,13 @@
 #!/usr/bin/env bash
 # Block rate-card edits when no characterization test exists.
 # Wired to:
-#   preToolUse        — Write, StrReplace, Delete, Shell tool calls
-#   beforeShellExecution — shell commands that mention the rate card
+#   preToolUse             — Write, StrReplace, Delete, Shell (see hooks.json matcher)
+#   beforeShellExecution   — shell commands mentioning the rate card (see hooks.json matcher)
 # Exit 2 to deny per Cursor hook protocol.
+#
+# Two layers on purpose:
+#   hooks.json matcher — cheap Cursor-side filter; avoids spawning this script on every event.
+#   RATES_TARGET below — authoritative allow/deny logic; must stay aligned with those matchers.
 set -euo pipefail
 
 input=$(cat)
@@ -20,9 +24,10 @@ import sys
 data = json.loads(os.environ["INPUT"])
 event = data.get("hook_event_name", "")
 
-# src/legacy/rates.js, rates.ts, or shell commands that mention them.
+# legacy/rates, legacy/rates.js|ts, dist/legacy/rates, rates.js|ts in commands/paths.
 RATES_TARGET = re.compile(
-    r"legacy[/\\]rates\.(?:js|ts)(?:[^a-zA-Z]|$)|(?:^|[\s\"'`/])rates\.(?:js|ts)(?:[\s\"'`]|$)"
+    r"legacy[/\\]rates(?:\.(?:js|ts))?(?:[^a-zA-Z]|$)"
+    r"|(?:^|[\s\"'`/])rates\.(?:js|ts)(?:[\s\"'`]|$)"
 )
 
 DENY = {
@@ -84,12 +89,10 @@ PY
 
   if command -v node >/dev/null 2>&1; then
     INPUT="$input" node <<'JS'
-const glob = require("fs").readdirSync;
-const path = require("path");
-
 const data = JSON.parse(process.env.INPUT);
 const event = data.hook_event_name || "";
-const ratesTarget = /legacy[/\\]rates\.(?:js|ts)(?:[^a-zA-Z]|$)|(?:^|[\s"'`\/])rates\.(?:js|ts)(?:[\s"'`]|$)/;
+const ratesTarget =
+  /legacy[/\\]rates(?:\.(?:js|ts))?(?:[^a-zA-Z]|$)|(?:^|[\s"'`\/])rates\.(?:js|ts)(?:[\s"'`]|$)/;
 
 const DENY = {
   permission: "deny",

@@ -11,7 +11,7 @@
     "beforeShellExecution": [
       {
         "command": ".cursor/hooks/guard-rates.sh",
-        "matcher": "rates\\.(js|ts)|legacy/rates",
+        "matcher": "legacy[/\\\\]rates(?:\\\\.(?:js|ts))?|rates\\\\.(?:js|ts)",
         "failClosed": true
       }
     ]

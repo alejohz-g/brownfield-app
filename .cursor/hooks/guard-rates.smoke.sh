@@ -42,13 +42,34 @@ run_case "Write unrelated" \
   '{"hook_event_name":"preToolUse","tool_name":"Write","tool_input":{"path":"src/routes/bookings.ts"}}' \
   allow
 
-run_case "Shell tool" \
+run_case "Shell tool with rates.ts path" \
   "{\"hook_event_name\":\"preToolUse\",\"tool_name\":\"Shell\",\"tool_input\":{\"command\":\"sed -i x $TARGET\"}}" \
   deny
 
-run_case "beforeShellExecution" \
+run_case "beforeShellExecution rates.js" \
   "{\"hook_event_name\":\"beforeShellExecution\",\"command\":\"rm src/$LEGACY.js\"}" \
   deny
+
+run_case "beforeShellExecution extensionless dist path" \
+  '{"hook_event_name":"beforeShellExecution","command":"node -e \"require('"'"'./dist/legacy/rates'"'"')\""}' \
+  deny
+
+run_case "beforeShellExecution build verify command" \
+  "$(python3 - <<'PY'
+import json
+cmd = """cd /Users/omar.henao/Documents/Globant/brownfield-app && npm run build && node -e "
+const { rateFor } = require('./dist/legacy/rates');
+console.log(rateFor('stage-a', '2026-07-04T09', 5));
+"
+"""
+print(json.dumps({"hook_event_name": "beforeShellExecution", "command": cmd}))
+PY
+)" \
+  deny
+
+run_case "preToolUse Read unrelated" \
+  '{"hook_event_name":"preToolUse","tool_name":"Read","tool_input":{"path":"src/server.ts"}}' \
+  allow
 
 run_case "npm test" \
   '{"hook_event_name":"beforeShellExecution","command":"npm test"}' \
