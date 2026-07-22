@@ -1,49 +1,46 @@
 import { Router } from "express";
 import { nextId, capacityFor, countForSlot, insert, all, findById, Booking } from "../db";
+import { ApiError } from "../middleware/errors";
+import { sanitizeCreateBooking, SanitizedCreateBookingBody } from "../middleware/sanitize";
+import { validateCreateBooking } from "../middleware/validateBooking";
 // Legacy JS module pulled in without types.
 const rates = require("../legacy/rates");
 
 export const bookingsRouter = Router();
 
-// One fat handler doing validation, business logic, rate calculation, and persistence.
-// This is the classic brownfield route: everything in one place, no tests,
-// inconsistent error shapes. Good target for the workshop refactor.
-bookingsRouter.post("/", (req, res) => {
-  const body = req.body || {};
+bookingsRouter.post(
+  "/",
+  sanitizeCreateBooking,
+  validateCreateBooking,
+  (req, res, next) => {
+    try {
+      const body = req.body as SanitizedCreateBookingBody;
+      const { production, stage, slot, crewSize } = body;
 
-  if (!body.production) {
-    return res.status(400).send("production required");
+      const cap = capacityFor(stage);
+      const taken = countForSlot(stage, slot);
+      if (taken + crewSize > cap) {
+        throw new ApiError(409, "stage full", "STAGE_FULL");
+      }
+
+      const rate = rates.rateFor(stage, slot, crewSize);
+
+      const b: Booking = {
+        id: nextId(),
+        production,
+        stage,
+        slot,
+        crewSize,
+        ratePaid: rate,
+        createdAt: new Date().toISOString(),
+      };
+      insert(b);
+      return res.status(201).json(b);
+    } catch (err) {
+      next(err);
+    }
   }
-  if (!body.stage) {
-    return res.json({ error: "stage missing" }); // note: 200 status, different error shape
-  }
-
-  const crewSize = body.crewSize ? body.crewSize : 1;
-  const cap = capacityFor(body.stage);
-  if (cap === undefined) {
-    return res.status(400).json({ error: "unknown stage" });
-  }
-
-  const taken = countForSlot(body.stage, body.slot);
-  if (taken + crewSize > cap) {
-    // Stage block is full. Today we just reject. The waitlist feature (see specs/) changes this.
-    return res.status(409).json({ error: "stage full", capacity: cap, taken: taken });
-  }
-
-  const rate = rates.rateFor(body.stage, body.slot, crewSize);
-
-  const b: Booking = {
-    id: nextId(),
-    production: body.production,
-    stage: body.stage,
-    slot: body.slot,
-    crewSize: crewSize,
-    ratePaid: rate,
-    createdAt: new Date().toISOString(),
-  };
-  insert(b);
-  return res.status(201).json(b);
-});
+);
 
 bookingsRouter.get("/", (_req, res) => {
   res.json(all());
